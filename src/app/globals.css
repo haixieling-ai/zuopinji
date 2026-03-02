@@ -1,0 +1,382 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #e5e5e5;
+  --text-global: #e5e5e5;
+  --section-padding: 8vh;
+  --section-gap: 8vh;
+  --content-gap: 12px;
+  /* 系统字体栈，无需构建时联网，视觉效果接近原 Google Fonts */
+  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-geist-mono: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  --font-inter: var(--font-geist-sans);
+  --font-noto-sans-sc: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+}
+
+/* Premium Dark Theme */
+@theme inline {
+  --color-background: #000000;
+  --color-foreground: #e5e5e5;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-title-en: var(--font-inter);
+  --font-title-zh: var(--font-noto-sans-sc);
+  --text-section: #e5e5e5;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  margin-top: 0 !important;
+}
+
+/* 消除图片行内元素默认 3-5px 缝隙 */
+img {
+  display: block;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: transparent !important;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* 流星 canvas 层：fixed 全屏、z-index -1，背景透明以透出渐变 */
+.meteor-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* 桌面端隐藏默认光标，使用自定义随动光标 */
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+}
+
+/* body 透明，让流星背景透出，消除横向滚动，全局文字 #E5E5E5 */
+body {
+  background: transparent !important;
+  color: var(--text-global, #e5e5e5);
+  overflow-x: hidden;
+  max-width: 100%;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Film Grain 胶片噪点 - 已移至 BackgroundLayers 组件 */
+
+/* Hero 入场动画：由下往上浮现 */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero 标题从底部升起动画 */
+@keyframes rise-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(48px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise-from-bottom {
+  animation: rise-from-bottom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-rise-from-bottom-delay {
+  animation: rise-from-bottom 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-up-delay-1 {
+  animation: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.animate-fade-up-delay-2 {
+  animation: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  opacity: 0;
+}
+
+/* 呼吸灯效果 */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 2s ease-in-out infinite;
+}
+
+/* 呼吸灯 - 仅透明度（用于光晕） */
+@keyframes breathe-opacity {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-breathe-glow {
+  animation: breathe-opacity 2s ease-in-out infinite;
+}
+
+/* 入场动画：向上滑入淡入 1.2s ease-out */
+@keyframes fade-in-view {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-view {
+  animation: fade-in-view 1.2s ease-out forwards;
+}
+
+/* 住宅/商业空间图片：缓慢向上浮现 1.5s */
+.animate-fade-in-view-slow {
+  animation: fade-in-view 1.5s ease-out forwards;
+}
+
+/* 设计方案无限水平滚动 */
+@keyframes scroll-concept {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-concept {
+  animation: scroll-concept 60s linear infinite;
+}
+
+.animate-scroll-concept-fast {
+  animation: scroll-concept 180s linear infinite;
+}
+
+.animate-scroll-concept-p3 {
+  animation: scroll-concept 80s linear infinite;
+}
+
+.animate-scroll-concept-p4 {
+  animation: scroll-concept 120s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-concept-p5 {
+  animation: scroll-concept 60s linear infinite;
+  will-change: transform;
+}
+
+.concept-scroll-pause:hover .animate-scroll-concept,
+.concept-scroll-pause:hover .animate-scroll-concept-fast,
+.concept-scroll-pause:hover .animate-scroll-concept-p3,
+.concept-scroll-pause:hover .animate-scroll-concept-p4,
+.concept-scroll-pause:hover .animate-scroll-concept-p5 {
+  animation-play-state: paused;
+}
+
+/* 氛围光晕：30s 极慢呼吸偏移，光影流转 */
+@keyframes light-leak-drift-1 {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(3%, 2%) scale(1.05);
+  }
+}
+@keyframes light-leak-drift-2 {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-2%, -3%) scale(1.05);
+  }
+}
+.animate-light-leak-1 {
+  animation: light-leak-drift-1 35s ease-in-out infinite;
+}
+.animate-light-leak-2 {
+  animation: light-leak-drift-2 32s ease-in-out infinite;
+}
+
+/* 流星划过动画 - -45度，2-4s慢速，300px渐变尾迹淡出 */
+@keyframes meteor-fall {
+  0% {
+    transform: rotate(-45deg) translateY(-50px) translateX(-50px);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: rotate(-45deg) translateY(100vh) translateX(100vh);
+    opacity: 0;
+  }
+}
+
+/* 作品图片 - 纯黑底悬浮，无阴影无边框 */
+.animate-image-breathe {
+  /* 已移除 shadow 和 border，3D 作品直接悬浮在黑底上 */
+}
+
+/* 图片容器：光标悬停时反色效果（配合 CustomCursor） */
+[data-cursor-invert] {
+  cursor: none;
+}
+
+/* 首个 Section（导航栏下方第一个模块）：强制去除顶部冗余空间 */
+.first-main-section {
+  margin-top: 0 !important;
+  padding-top: 4vh !important;
+}
+
+/* 板块间距：统一 8vh；图片密集区域用紧凑间距 */
+.section-block {
+  padding-top: 8vh !important;
+  padding-bottom: 8vh !important;
+}
+.section-block.section-compact {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.content-gap {
+  margin-bottom: 12px !important;
+}
+
+/* 标题组件规范：margin-top 6vh 呼吸感，margin-bottom 24px 固定 */
+.section-title-block {
+  margin-top: 6vh !important;
+  margin-bottom: 24px !important;
+  text-align: center;
+}
+.section-title-block:first-child,
+.first-main-section .section-title-block {
+  margin-top: 0 !important;
+}
+.section-title-number {
+  font-weight: 100;
+  font-size: 1.25em;
+  opacity: 0.3;
+  color: var(--text-section, #e5e5e5);
+}
+.section-title-main {
+  font-family: var(--font-noto-sans-sc), "Noto Sans SC", sans-serif;
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: 0.05em;
+  color: var(--text-section, #e5e5e5);
+}
+.section-title-en {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 200;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-section, #e5e5e5);
+}
+.section-title-to-content {
+  margin-top: 6vh !important;
+  margin-bottom: 24px !important;
+}
+.section-title-aux {
+  font-family: var(--font-noto-sans-sc), "Noto Sans SC", sans-serif;
+  font-weight: 300;
+  color: var(--text-section, #e5e5e5);
+}
+/* 确保标题下方的图片/视频容器无额外上边距 */
+.section-img-wrapper {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+/* 移动端：强制压缩 - 4vh 板块间距，20px 标题下边距，消除 100vh 黑屏空隙 */
+@media (max-width: 768px) {
+  .section-block {
+    padding-top: 4vh !important;
+    padding-bottom: 4vh !important;
+  }
+  .first-main-section {
+    padding-top: 4vh !important;
+  }
+  .section-compact {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .section-title-block,
+  .section-title-to-content {
+    margin-top: 4vh !important;
+    margin-bottom: 16px !important;
+  }
+  .section-title-main {
+    font-size: 20px !important;
+  }
+  .section-title-en {
+    font-size: 12px !important;
+  }
+  .content-gap {
+    margin-bottom: 16px !important;
+  }
+  body {
+    min-height: auto !important;
+  }
+  /* 消除 min-height: 100vh 产生的巨大黑屏空隙 */
+  .min-h-screen {
+    min-height: auto !important;
+  }
+  .h-screen {
+    min-height: 60vh !important;
+    height: auto !important;
+  }
+  .section-img-wrapper {
+    padding-left: 6%;
+    padding-right: 6%;
+  }
+}
+
