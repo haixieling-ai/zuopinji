@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ensureAbsoluteImageSrc } from "@/lib/imagePath";
+import { OSS_PROJECTS_BASE } from "@/config/assets";
 import { AutoPlayVideo } from "./AutoPlayVideo";
 
 const FALLBACK_VIDEO =
@@ -60,32 +61,31 @@ function isValidSettingsImage6(src: string): boolean {
   return /^([1-6])\.(jpg|jpeg|png|webp)$/i.test(name);
 }
 
-/* 图片路径：/projects/project-05/settings/，1.jpg–23.jpg，Map 循环渲染 */
+/* 图片路径统一走 OSS 外链，前缀来自 src/config/assets.ts */
 const SETTINGS_IMAGES: ConceptImage[] = Array.from({ length: 23 }, (_, i) => ({
-  src: `/projects/project-05/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-05/settings/${i + 1}.jpg`,
 }));
 
-/* 排除 project-06 中不存在的图片（如 17.jpg）避免 404 */
 const PROJECT_06_MISSING = [17];
 const PROJECT_06_IMAGES: ConceptImage[] = Array.from({ length: 40 }, (_, i) => i + 1)
   .filter((n) => !PROJECT_06_MISSING.includes(n))
   .map((n) => ({
-    src: `/projects/project-06/settings/${n}.jpg`,
+    src: `${OSS_PROJECTS_BASE}/project-06/settings/${n}.jpg`,
     prompt: `项目二设定图 ${n}`,
   }));
 
 const PROJECT_07_IMAGES: ConceptImage[] = Array.from({ length: 10 }, (_, i) => ({
-  src: `/projects/project-07/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-07/settings/${i + 1}.jpg`,
   prompt: `项目三设定图 ${i + 1}`,
 }));
 
 const PROJECT_08_IMAGES: ConceptImage[] = Array.from({ length: 30 }, (_, i) => ({
-  src: `/projects/project-08/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-08/settings/${i + 1}.jpg`,
   prompt: `项目四设定图 ${i + 1}`,
 }));
 
 const PROJECT_09_IMAGES: ConceptImage[] = Array.from({ length: 6 }, (_, i) => ({
-  src: `/projects/project-09/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-09/settings/${i + 1}.jpg`,
   prompt: `项目五设定图 ${i + 1}`,
 }));
 
@@ -99,6 +99,11 @@ export function AIFullChain({ conceptImages, videoSrc, secondVideoSrc, secondCon
   const [failedConcept1, setFailedConcept1] = useState<Set<string>>(new Set());
   const [effectiveVideoSrc, setEffectiveVideoSrc] = useState(videoSrc);
   const [effectiveSecondVideoSrc, setEffectiveSecondVideoSrc] = useState(secondVideoSrc ?? "");
+  const [loadedSrcs, setLoadedSrcs] = useState<Set<string>>(new Set());
+
+  const markLoaded = useCallback((s: string) => {
+    setLoadedSrcs((prev) => { if (prev.has(s)) return prev; const n = new Set(prev); n.add(s); return n; });
+  }, []);
   const rawImages1 = conceptImages.length > 0 ? conceptImages : SETTINGS_IMAGES;
   const baseImages1 = rawImages1.filter((item) => {
     const s = typeof item === "string" ? item : item.src;
@@ -174,13 +179,15 @@ export function AIFullChain({ conceptImages, videoSrc, secondVideoSrc, secondCon
                   onClick={() => setSelectedImage(ensureAbsoluteImageSrc(src))}
                 >
                   <div className="relative h-full overflow-hidden transition-all duration-300 group-hover:scale-[1.02]">
+                    {!loadedSrcs.has(src) && <div className="absolute inset-0 animate-pulse bg-[#111]" />}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={ensureAbsoluteImageSrc(src)}
                       alt={`设定图 ${(i % baseLen) + 1}`}
-                      className="h-full w-auto min-w-[180px] object-contain"
+                      className={`h-full w-auto min-w-[180px] object-contain transition-opacity duration-500 ease-out ${loadedSrcs.has(src) ? "opacity-100" : "opacity-0"}`}
                       style={{ aspectRatio: "auto" }}
                       loading="lazy"
+                      onLoad={() => markLoaded(src)}
                       onError={() => {
                         setFailedConcept1((prev) => new Set(prev).add(src));
                       }}
@@ -234,14 +241,17 @@ export function AIFullChain({ conceptImages, videoSrc, secondVideoSrc, secondCon
                         isHovered ? "scale-[1.02]" : ""
                       }`}
                     >
+                      {!loadedSrcs.has(src) && <div className="absolute inset-0 animate-pulse bg-[#111]" />}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={ensureAbsoluteImageSrc(src)}
                         alt={`项目二设定图 ${(i % baseLen) + 1}`}
-                        className="h-full w-auto min-w-[180px] object-contain"
+                        className={`h-full w-auto min-w-[180px] object-contain transition-opacity duration-500 ease-out ${loadedSrcs.has(src) ? "opacity-100" : "opacity-0"}`}
                         style={{ aspectRatio: "auto" }}
                         loading="lazy"
+                        onLoad={() => markLoaded(src)}
                         onError={(e) => {
+                          markLoaded(src);
                           const t = e.currentTarget;
                           if (t.src !== IMG_PLACEHOLDER) {
                             t.src = IMG_PLACEHOLDER;
@@ -302,14 +312,17 @@ export function AIFullChain({ conceptImages, videoSrc, secondVideoSrc, secondCon
                         isHovered ? "scale-[1.02]" : ""
                       }`}
                     >
+                      {!loadedSrcs.has(src) && <div className="absolute inset-0 animate-pulse bg-[#111]" />}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={ensureAbsoluteImageSrc(src)}
                         alt={`项目三设定图 ${(i % baseLen) + 1}`}
-                        className="h-full w-auto min-w-[180px] object-contain"
+                        className={`h-full w-auto min-w-[180px] object-contain transition-opacity duration-500 ease-out ${loadedSrcs.has(src) ? "opacity-100" : "opacity-0"}`}
                         style={{ aspectRatio: "auto" }}
                         loading="lazy"
+                        onLoad={() => markLoaded(src)}
                         onError={(e) => {
+                          markLoaded(src);
                           const t = e.currentTarget;
                           if (t.src !== IMG_PLACEHOLDER) {
                             t.src = IMG_PLACEHOLDER;
@@ -369,14 +382,17 @@ export function AIFullChain({ conceptImages, videoSrc, secondVideoSrc, secondCon
                         isHovered ? "scale-[1.02]" : ""
                       }`}
                     >
+                      {!loadedSrcs.has(src) && <div className="absolute inset-0 animate-pulse bg-[#111]" />}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={ensureAbsoluteImageSrc(src)}
                         alt={`项目四设定图 ${(i % baseImages4.length) + 1}`}
-                        className="h-full w-auto min-w-[180px] object-contain"
+                        className={`h-full w-auto min-w-[180px] object-contain transition-opacity duration-500 ease-out ${loadedSrcs.has(src) ? "opacity-100" : "opacity-0"}`}
                         style={{ aspectRatio: "auto" }}
                         loading="lazy"
+                        onLoad={() => markLoaded(src)}
                         onError={(e) => {
+                          markLoaded(src);
                           const t = e.currentTarget;
                           if (t.src !== IMG_PLACEHOLDER) {
                             t.src = IMG_PLACEHOLDER;
@@ -437,14 +453,17 @@ export function AIFullChain({ conceptImages, videoSrc, secondVideoSrc, secondCon
                         isHovered ? "scale-[1.02]" : ""
                       }`}
                     >
+                      {!loadedSrcs.has(src) && <div className="absolute inset-0 animate-pulse bg-[#111]" />}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={ensureAbsoluteImageSrc(src)}
                         alt={`项目五设定图 ${(i % baseLen) + 1}`}
-                        className="h-full w-auto min-w-[180px] object-contain"
+                        className={`h-full w-auto min-w-[180px] object-contain transition-opacity duration-500 ease-out ${loadedSrcs.has(src) ? "opacity-100" : "opacity-0"}`}
                         style={{ aspectRatio: "auto" }}
                         loading="lazy"
+                        onLoad={() => markLoaded(src)}
                         onError={(e) => {
+                          markLoaded(src);
                           const t = e.currentTarget;
                           if (t.src !== IMG_PLACEHOLDER) {
                             t.src = IMG_PLACEHOLDER;

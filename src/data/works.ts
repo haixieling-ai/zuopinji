@@ -1,8 +1,10 @@
 /**
  * 作品集数据 - 统一维护
- * 图片/视频路径可替换为腾讯云 COS / VOD 链接
- * 视频已全部使用阿里云 OSS 外链，不再依赖本地 public/videos/
+ * 视频已全部使用阿里云 OSS 外链
+ * 图片统一走阿里云 OSS 外链，前缀集中管理于 src/config/assets.ts
  */
+
+import { OSS_PROJECTS_BASE } from "@/config/assets";
 
 /* 视频路径 - 阿里云 OSS 外链 */
 export const VIDEO_PATHS = {
@@ -15,7 +17,7 @@ export const VIDEO_PATHS = {
 } as const;
 
 /* 项目 01 - 客厅/卧室 */
-const PROJECT_01_BASE = "/projects/project-01";
+const PROJECT_01_BASE = `${OSS_PROJECTS_BASE}/project-01`;
 export const SPACE_PROJECT_01 = {
   living: [
     `${PROJECT_01_BASE}/living-01.jpg`,
@@ -40,21 +42,21 @@ export const SPACE_PROJECT_01 = {
 };
 
 /* 项目 02 - 住宅空间 A */
-const PROJECT_02_BASE = "/projects/project-02";
+const PROJECT_02_BASE = `${OSS_PROJECTS_BASE}/project-02`;
 export const SPACE_PROJECT_02 = {
   living: Array.from({ length: 15 }, (_, i) => `${PROJECT_02_BASE}/living-${String(i + 1).padStart(2, "0")}.jpg`),
   bedroom: Array.from({ length: 5 }, (_, i) => `${PROJECT_02_BASE}/bedroom-${String(i + 1).padStart(2, "0")}.jpg`),
 };
 
 /* 项目 03 - 住宅空间 B */
-const PROJECT_03_BASE = "/projects/project-03";
+const PROJECT_03_BASE = `${OSS_PROJECTS_BASE}/project-03`;
 export const SPACE_PROJECT_03 = {
   living: Array.from({ length: 12 }, (_, i) => `${PROJECT_03_BASE}/living-${String(i + 1).padStart(2, "0")}.jpg`),
   garden: Array.from({ length: 4 }, (_, i) => `${PROJECT_03_BASE}/garden-${String(i + 1).padStart(2, "0")}.jpg`),
 };
 
 /* 项目 04 - 商业空间 */
-const PROJECT_04_BASE = "/projects/project-04";
+const PROJECT_04_BASE = `${OSS_PROJECTS_BASE}/project-04`;
 export const SPACE_PROJECT_04 = Array.from(
   { length: 6 },
   (_, i) => `${PROJECT_04_BASE}/commercial-${String(i + 1).padStart(2, "0")}.jpg`
@@ -62,7 +64,7 @@ export const SPACE_PROJECT_04 = Array.from(
 
 /* AIGC 项目 - project-05 设定图 1-23 */
 export const AIGC_CONCEPT_05 = Array.from({ length: 23 }, (_, i) => ({
-  src: `/projects/project-05/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-05/settings/${i + 1}.jpg`,
 }));
 
 /* project-06 缺失的图片索引（如 17.jpg 不存在则排除，避免 404） */
@@ -70,26 +72,47 @@ const PROJECT_06_MISSING = [17];
 export const AIGC_CONCEPT_06 = Array.from({ length: 40 }, (_, i) => i + 1)
   .filter((n) => !PROJECT_06_MISSING.includes(n))
   .map((n) => ({
-    src: `/projects/project-06/settings/${n}.jpg`,
+    src: `${OSS_PROJECTS_BASE}/project-06/settings/${n}.jpg`,
     prompt: `项目二设定图 ${n}`,
   }));
 
 export const AIGC_CONCEPT_07 = Array.from({ length: 10 }, (_, i) => ({
-  src: `/projects/project-07/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-07/settings/${i + 1}.jpg`,
   prompt: `项目三设定图 ${i + 1}`,
 }));
 
 export const AIGC_CONCEPT_08 = Array.from({ length: 30 }, (_, i) => ({
-  src: `/projects/project-08/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-08/settings/${i + 1}.jpg`,
   prompt: `项目四设定图 ${i + 1}`,
 }));
 
 export const AIGC_CONCEPT_09 = Array.from({ length: 6 }, (_, i) => ({
-  src: `/projects/project-09/settings/${i + 1}.jpg`,
+  src: `${OSS_PROJECTS_BASE}/project-09/settings/${i + 1}.jpg`,
   prompt: `项目五设定图 ${i + 1}`,
 }));
 
+/**
+ * 图片资源接口
+ *
+ * - src:    原始大图 URL（当前使用）
+ * - thumb:  缩略图 URL（可选，未提供时组件自动降级为 src）
+ *           后续如果在 OSS 上生成了缩略图目录，可统一填入，
+ *           例如：thumb: `${OSS_PROJECTS_BASE}/project-05/settings/thumb/1.jpg`
+ * - prompt: AI 设定图的 Prompt 描述（可选，悬停时显示）
+ */
 export interface ConceptImage {
   src: string;
+  thumb?: string;
   prompt?: string;
+}
+
+/**
+ * 空间图片资源接口（住宅 / 商业等）
+ *
+ * - full:  大图 URL（当前使用）
+ * - thumb: 缩略图 URL（可选，列表卡片 / 预览时优先使用）
+ */
+export interface SpaceImage {
+  full: string;
+  thumb?: string;
 }

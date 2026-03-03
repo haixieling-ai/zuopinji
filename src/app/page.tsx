@@ -231,9 +231,7 @@ export default function Home() {
           loop
           playsInline
           preload="metadata"
-          controls
-        >
-        </video>
+        />
 
         {/* 半透明深色遮罩：仅在客户端挂载后渲染，避免 Hydration 报错（含 linear-gradient 等易被扩展修改的样式） */}
         {isMounted && (

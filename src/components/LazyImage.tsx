@@ -10,14 +10,10 @@ interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
-  /** 占位时显示的比例，减少布局偏移 */
   aspectRatio?: string;
   onError?: () => void;
 }
 
-/**
- * 懒加载图片：进入视口后再加载
- */
 export function LazyImage({
   src,
   alt,
@@ -27,6 +23,7 @@ export function LazyImage({
 }: LazyImageProps) {
   const [isInView, setIsInView] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,6 +41,7 @@ export function LazyImage({
 
   const handleError = () => {
     setFailed(true);
+    setLoaded(true);
     onError?.();
   };
 
@@ -56,14 +54,23 @@ export function LazyImage({
       style={{ aspectRatio: aspectRatio !== "auto" ? aspectRatio : undefined }}
     >
       {isInView ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={displaySrc}
-          alt={alt}
-          loading="lazy"
-          onError={handleError}
-          className="h-full w-full object-contain"
-        />
+        <div className="relative h-full w-full">
+          {!loaded && (
+            <div
+              className="absolute inset-0 animate-pulse bg-[#111]"
+              style={{ aspectRatio: aspectRatio !== "auto" ? aspectRatio : "16/9" }}
+            />
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={displaySrc}
+            alt={alt}
+            loading="lazy"
+            onLoad={() => setLoaded(true)}
+            onError={handleError}
+            className={`h-full w-full object-contain transition-opacity duration-500 ease-out ${loaded ? "opacity-100" : "opacity-0"}`}
+          />
+        </div>
       ) : (
         <div
           className="h-full w-full bg-[#0a0a0a]"
